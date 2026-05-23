@@ -68,8 +68,6 @@ function sliceByTimeRange(
   if (range === "ALL" || data.length === 0) return data;
 
   const monthsToSubtract = range === "3M" ? 3 : range === "6M" ? 6 : 12;
-
-  // Use the most recent date in the dataset as the baseline
   const latestDate = new Date(data[data.length - 1].date);
 
   const cutoffDate = new Date(latestDate);
@@ -101,7 +99,7 @@ function CustomTooltip({ active, payload, label }: any) {
         {formatTooltipDate(label)}
       </p>
       <p
-        className={`text-sm font-semibold tabular-nums ${isPos ? "text-green-600" : "text-red-500"}`}
+        className={`text-sm font-semibold tabular-nums ${isPos ? "text-green-500" : "text-red-500"}`}
       >
         {value > 0 ? `+${value}` : value}%
       </p>
@@ -145,7 +143,7 @@ export default function IrdViewer() {
 
   const latestIrd = allIrdData.at(-1)?.differential ?? 0;
   const isPositive = latestIrd >= 0;
-  const themeColor = isPositive ? "#16a34a" : "#dc2626";
+  const themeColor = isPositive ? "#22c55e" : "#ef4444"; // Adjusted for dark mode visibility
   const tickInterval = computeTickInterval(irdData.length);
 
   const yValues = irdData.map((d) => d.differential);
@@ -158,216 +156,229 @@ export default function IrdViewer() {
   ];
 
   return (
-    <Card className="w-full max-w-4xl">
-      <CardHeader>
-        <CardTitle className="text-lg">
-          Interest Rate Differential Viewer
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-5">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="space-y-1.5">
-            <Label>Base Currency</Label>
-            <Select value={base} onValueChange={setBase}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {CURRENCIES.map((c) => (
-                  <SelectItem key={c} value={c} disabled={c === quote}>
-                    {c}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+    <div className="dark w-full border-2 border-blue-500 rounded-lg  max-w-4xl">
+      <Card className="w-full bg-background text-foreground border-border">
+        <CardHeader>
+          <CardTitle className="text-lg md:text-xl">
+            Interest Rate Differential Viewer
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
+            <div className="space-y-1.5">
+              <Label>Base Currency</Label>
+              <Select value={base} onValueChange={setBase}>
+                <SelectTrigger className="w-full">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {CURRENCIES.map((c) => (
+                    <SelectItem key={c} value={c} disabled={c === quote}>
+                      {c}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
 
-          <div className="space-y-1.5">
-            <Label>Quote Currency</Label>
-            <Select value={quote} onValueChange={setQuote}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {CURRENCIES.map((c) => (
-                  <SelectItem key={c} value={c} disabled={c === base}>
-                    {c}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+            <div className="space-y-1.5">
+              <Label>Quote Currency</Label>
+              <Select value={quote} onValueChange={setQuote}>
+                <SelectTrigger className="w-full">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {CURRENCIES.map((c) => (
+                    <SelectItem key={c} value={c} disabled={c === base}>
+                      {c}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
 
-          <div className="space-y-1.5">
-            <Label>Position</Label>
-            <div className="grid grid-cols-2 gap-2">
-              <Button
-                variant={activeDirection === "BUY" ? "default" : "outline"}
-                onClick={() => handleTrade("BUY")}
-                disabled={loading}
-                className={
-                  activeDirection === "BUY"
-                    ? "bg-green-600 hover:bg-green-700 text-white"
-                    : ""
-                }
-              >
-                BUY {base}/{quote}
-              </Button>
-              <Button
-                variant={activeDirection === "SELL" ? "default" : "outline"}
-                onClick={() => handleTrade("SELL")}
-                disabled={loading}
-                className={
-                  activeDirection === "SELL"
-                    ? "bg-red-600 hover:bg-red-700 text-white"
-                    : ""
-                }
-              >
-                SELL {base}/{quote}
-              </Button>
+            <div className="space-y-1.5 sm:col-span-2 md:col-span-1">
+              <Label>Position</Label>
+              <div className="grid grid-cols-2 gap-2">
+                <Button
+                  variant={activeDirection === "BUY" ? "default" : "outline"}
+                  onClick={() => handleTrade("BUY")}
+                  disabled={loading}
+                  className={
+                    activeDirection === "BUY"
+                      ? "bg-green-600 hover:bg-green-700 text-white border-transparent"
+                      : ""
+                  }
+                >
+                  BUY {base}/{quote}
+                </Button>
+                <Button
+                  variant={activeDirection === "SELL" ? "default" : "outline"}
+                  onClick={() => handleTrade("SELL")}
+                  disabled={loading}
+                  className={
+                    activeDirection === "SELL"
+                      ? "bg-red-600 hover:bg-red-700 text-white border-transparent"
+                      : ""
+                  }
+                >
+                  SELL {base}/{quote}
+                </Button>
+              </div>
             </div>
           </div>
-        </div>
 
-        {error && <p className="text-sm text-red-600">{error}</p>}
-        {loading && (
-          <p className="text-sm text-muted-foreground">Fetching rates…</p>
-        )}
+          {error && <p className="text-sm text-red-500 font-medium">{error}</p>}
+          {loading && (
+            <p className="text-sm text-muted-foreground animate-pulse">
+              Fetching rates…
+            </p>
+          )}
 
-        {!loading && irdData.length > 0 && activeDirection && (
-          <>
-            <Card className="shadow-none border-muted">
-              <CardContent className="pt-4 pb-4 flex items-center justify-between">
-                <div>
-                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
-                    Current Net Carry Yield
-                  </p>
-                  <p
-                    className={`text-4xl font-black tabular-nums ${isPositive ? "text-green-600" : "text-red-600"}`}
-                  >
-                    {latestIrd > 0 ? `+${latestIrd}` : latestIrd}%
-                  </p>
-                </div>
-                <div className="text-right space-y-1">
-                  <p className="text-xs text-muted-foreground">Formula</p>
-                  <Badge variant="secondary" className="font-mono text-xs">
-                    {activeDirection === "BUY"
-                      ? `${base} Rate − ${quote} Rate`
-                      : `${quote} Rate − ${base} Rate`}
-                  </Badge>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="shadow-none border-muted">
-              <CardContent className="pt-4 pb-4">
-                <div className="flex items-center justify-between mb-4">
-                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                    Historical Yield Differential
-                  </p>
-                  <div className="flex gap-1">
-                    {TIME_RANGE_OPTIONS.map((opt) => (
-                      <button
-                        key={opt.value}
-                        onClick={() => setTimeRange(opt.value)}
-                        className={`px-2.5 py-1 rounded text-xs font-medium transition-colors ${
-                          timeRange === opt.value
-                            ? "bg-foreground text-background"
-                            : "text-muted-foreground hover:text-foreground hover:bg-muted"
-                        }`}
-                      >
-                        {opt.label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-                <div className="h-72">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <AreaChart
-                      key={timeRange}
-                      data={irdData}
-                      margin={{ top: 8, right: 8, left: -10, bottom: 0 }}
+          {!loading && irdData.length > 0 && activeDirection && (
+            <div className="space-y-4">
+              <Card className="shadow-none border-muted bg-card/50">
+                <CardContent className="pt-4 pb-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                  <div>
+                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
+                      Current Net Carry Yield
+                    </p>
+                    <p
+                      className={`text-3xl md:text-4xl font-black tabular-nums ${isPositive ? "text-green-500" : "text-red-500"}`}
                     >
-                      <defs>
-                        <linearGradient
-                          id="irdGradient"
-                          x1="0"
-                          y1="0"
-                          x2="0"
-                          y2="1"
+                      {latestIrd > 0 ? `+${latestIrd}` : latestIrd}%
+                    </p>
+                  </div>
+                  <div className="text-left space-y-1.5 w-full sm:w-auto">
+                    <p className="text-xs text-muted-foreground">Formula</p>
+                    <Badge
+                      variant="secondary"
+                      className="font-mono text-xs w-full sm:w-auto justify-center sm:justify-start"
+                    >
+                      {activeDirection === "BUY"
+                        ? `${base} Rate − ${quote} Rate`
+                        : `${quote} Rate − ${base} Rate`}
+                    </Badge>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="shadow-none border-muted bg-card/50">
+                <CardContent className="pt-4 pb-4">
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4">
+                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                      Historical Yield Differential
+                    </p>
+                    <div className="flex flex-wrap gap-1 w-full sm:w-auto bg-muted/50 p-1 rounded-md">
+                      {TIME_RANGE_OPTIONS.map((opt) => (
+                        <button
+                          key={opt.value}
+                          onClick={() => setTimeRange(opt.value)}
+                          className={`flex-1 sm:flex-none px-3 py-1.5 rounded-sm text-xs font-medium transition-colors ${
+                            timeRange === opt.value
+                              ? "bg-background text-foreground shadow-sm"
+                              : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                          }`}
                         >
-                          <stop
-                            offset="0%"
-                            stopColor={themeColor}
-                            stopOpacity={0.18}
-                          />
-                          <stop
-                            offset="100%"
-                            stopColor={themeColor}
-                            stopOpacity={0}
-                          />
-                        </linearGradient>
-                      </defs>
-                      <CartesianGrid
-                        strokeDasharray="2 4"
-                        vertical={false}
-                        stroke="hsl(var(--border))"
-                        strokeOpacity={0.6}
-                      />
-                      <XAxis
-                        dataKey="date"
-                        fontSize={11}
-                        tickLine={false}
-                        axisLine={false}
-                        stroke="hsl(var(--muted-foreground))"
-                        tickFormatter={formatAxisDate}
-                        interval={tickInterval}
-                        dy={6}
-                      />
-                      <YAxis
-                        fontSize={11}
-                        tickLine={false}
-                        axisLine={false}
-                        stroke="hsl(var(--muted-foreground))"
-                        tickFormatter={(v) => `${v}%`}
-                        domain={yDomain}
-                        tickCount={6}
-                        width={48}
-                      />
-                      <Tooltip
-                        content={<CustomTooltip />}
-                        cursor={{
-                          stroke: "hsl(var(--border))",
-                          strokeWidth: 1,
-                        }}
-                      />
-                      <ReferenceLine
-                        y={0}
-                        stroke="hsl(var(--muted-foreground))"
-                        strokeDasharray="3 4"
-                        strokeOpacity={0.5}
-                        strokeWidth={1}
-                      />
-                      <Area
-                        type="monotoneX"
-                        dataKey="differential"
-                        stroke={themeColor}
-                        strokeWidth={2}
-                        fill="url(#irdGradient)"
-                        isAnimationActive={true}
-                        animationDuration={400}
-                        animationEasing="ease-out"
-                        dot={false}
-                        activeDot={{ r: 4, strokeWidth: 0, fill: themeColor }}
-                      />
-                    </AreaChart>
-                  </ResponsiveContainer>
-                </div>
-              </CardContent>
-            </Card>
-          </>
-        )}
-      </CardContent>
-    </Card>
+                          {opt.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="h-full md:h-72 w-full">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <AreaChart
+                        key={timeRange}
+                        data={irdData}
+                        margin={{ top: 8, right: 9, left: -2, bottom: 0 }}
+                      >
+                        <defs>
+                          <linearGradient
+                            id="irdGradient"
+                            x1="0"
+                            y1="0"
+                            x2="0"
+                            y2="1"
+                          >
+                            <stop
+                              offset="0%"
+                              stopColor={themeColor}
+                              stopOpacity={0.3}
+                            />
+                            <stop
+                              offset="100%"
+                              stopColor={themeColor}
+                              stopOpacity={0}
+                            />
+                          </linearGradient>
+                        </defs>
+                        <CartesianGrid
+                          strokeDasharray="2 4"
+                          vertical={false}
+                          stroke="#3f3f46" /* zinc-700 fallback */
+                          strokeOpacity={0.4}
+                        />
+                        <XAxis
+                          dataKey="date"
+                          fontSize={10}
+                          tickLine={false}
+                          axisLine={false}
+                          tick={{
+                            fill: "#a1a1aa",
+                          }} /* zinc-400 explicit fill */
+                          tickFormatter={formatAxisDate}
+                          interval={tickInterval}
+                          minTickGap={20}
+                          dy={8}
+                        />
+                        <YAxis
+                          fontSize={10}
+                          tickLine={false}
+                          axisLine={false}
+                          tick={{
+                            fill: "#a1a1aa",
+                          }} /* zinc-400 explicit fill */
+                          tickFormatter={(v) => `${v}%`}
+                          domain={yDomain}
+                          tickCount={6}
+                          width={45}
+                        />
+                        <Tooltip
+                          content={<CustomTooltip />}
+                          cursor={{
+                            stroke: "#52525b" /* zinc-600 fallback */,
+                            strokeWidth: 1,
+                            strokeDasharray: "4 4",
+                          }}
+                        />
+                        <ReferenceLine
+                          y={0}
+                          stroke="#a1a1aa"
+                          strokeDasharray="3 4"
+                          strokeOpacity={0.5}
+                          strokeWidth={1}
+                        />
+                        <Area
+                          type="monotoneX"
+                          dataKey="differential"
+                          stroke={themeColor}
+                          strokeWidth={2.5}
+                          fill="url(#irdGradient)"
+                          isAnimationActive={true}
+                          animationDuration={400}
+                          animationEasing="ease-out"
+                          dot={false}
+                          activeDot={{ r: 4, strokeWidth: 0, fill: themeColor }}
+                        />
+                      </AreaChart>
+                    </ResponsiveContainer>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </div>
   );
 }
